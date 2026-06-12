@@ -1,0 +1,498 @@
+[
+  {
+    "id": "3j1wpmEEU4t7I1e4Y5Eh27",
+    "title": "Add A Braid",
+    "slug": "add-a-braid",
+    "subtitle": "Price is per braid",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "A Fun Finish",
+    "service_time": null,
+    "is_new": null,
+    "product_id": "Braid",
+    "booker_reference": "Braid ",
+    "url": "https://www.drybarshops.com/service/add-ons/#add-a-braid",
+    "images": [
+      {
+        "internal_name": "Image > Product > Service Braid Updo",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/rZudexOBvO3aiouYPdZ43/22a38c77664348a5362a427e76fa20d5/Services_Braids1_822x822.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/iP0R3AjDINnpYtLkq9r54/658da8d12dbfe84ee891d7d3cab6293a/Services_Braids1_411x411.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Service Braid Side ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/3mfxHEd0LG9FwtNDjigbhq/b4bd474090cc0281eb884aaae8b2e485/Services_Braids6_822x822.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/673wieBvwN2SKF9fRs6asN/d76440e5b5b730f94796a165ef724b41/Services_Braids6_411x411.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Service Braid Behind",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5W3eKi9x0Xuxjq1KjELIx4/ec734e904dd4bf7971da4fd806c88651/Services_Braids9_822x822.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/3V8esqWAbxvA2mNm5RMkbr/6d9ce4daf9b79d5865a4488df9e4966b/Services_Braids9_411x411.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons",
+      "Services"
+    ]
+  },
+  {
+    "id": "1zP4mVLEDBlXvG9wuloZUR",
+    "title": "Add On",
+    "slug": "services-greater-than-direct-to-add-on-page",
+    "subtitle": null,
+    "price": 15,
+    "price_range": "$15",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 10,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": null,
+    "url": "https://www.drybarshops.com/the-styles/#services-greater-than-direct-to-add-on-page",
+    "images": [
+      {
+        "internal_name": "Image > Product > Scalp Massage (2)",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/286xZNVVs6cb3kKgtKOTPT/4544b041873cb3edabeeb7492dc213c9/AddOn_ScalpMassage_7850_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/5b9ul9DbYAPvw174tfRaVG/5131dbdcd010f22a8ac3adddb9e04d93/AddOn_ScalpMassage_7850_357x357.jpg"
+      }
+    ],
+    "categories": []
+  },
+  {
+    "id": "3u3kIXuvCEfxdcFKqxr20a",
+    "title": "Bay Breeze",
+    "slug": "bay-breeze",
+    "subtitle": "Long-lasting moisture for soft, shiny and detangled hair.",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "Dull, dry, dehydrated hair",
+    "service_time": null,
+    "is_new": false,
+    "product_id": "Bay Breeze",
+    "booker_reference": "Bay Breeze",
+    "url": "https://www.drybarshops.com/service/add-ons/#bay-breeze",
+    "images": [
+      {
+        "internal_name": "Image > Product > Bay Breeze > Product",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/6rZWiQMCcarZWdFVY6prRM/0065b2a5c55f96b164c113ffe944ef5f/BayBreeze_AddOnTile_Web_1080x1080_1.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/RLpCKZejh0PKkJ5a0aLCp/514239b67a5f76ebe30dce1263718b98/BayBreeze_AddOnTile_Web_1080x1080_1.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Bay Breeze > Process",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5dUpXtHtdMN9mTa2xx7xRN/878dc895fddbfb032959a25c07fc41f7/BayBreeze_AddOnTile_Web_1080x1080_2.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/2k9gRSrVm0P69TfDGcRMMk/0eaf4242d85b880b01432dd10345b6ce/BayBreeze_AddOnTile_Web_1080x1080_2.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Bay Breeze > Finish",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/3KJxbi2mwMs2vIOR10LW8T/c19ea804bcb6b6c9b934c208fce599b4/BayBreeze_AddOnTile_Web_1080x1080_3.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/5IgEJL4nE97L1rlAEQJUJy/97ba48470a7ed4dc814780571f30f30d/BayBreeze_AddOnTile_Web_1080x1080_3.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "69y9TrzvHBNU5RHLVIpuoG",
+    "title": "Braid",
+    "slug": "service-add-a-braid",
+    "subtitle": "Price is per braid",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Service",
+    "best_for": null,
+    "service_time": null,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": null,
+    "url": "https://www.drybarshops.com/the-styles/#service-add-a-braid",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > Service > Add a Braid",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/6at5IZBx8AgCUBITfikpT/c3618de48caaceb2c71da9b1678e1583/Services_7751_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/7yi2zgVl2SMDuIlvKWurOo/d7a23831a18e30c71967178bfc2c2552/Services_7751_357x357.jpg"
+      }
+    ],
+    "categories": []
+  },
+  {
+    "id": "2Tpn6itGezuh9EAAcVLknz",
+    "title": "Crown Tonic Scalp Balancing Cleanser",
+    "slug": "crown-tonic",
+    "subtitle": "PREMIUM ADD-ON + 10 Minutes",
+    "price": 25,
+    "price_range": "$25",
+    "type": "Add On",
+    "best_for": "Sensitive, flaky or oily scalps",
+    "service_time": null,
+    "is_new": false,
+    "product_id": "Crown Tonic",
+    "booker_reference": "Crown Tonic",
+    "url": "https://www.drybarshops.com/service/add-ons/#crown-tonic",
+    "images": [
+      {
+        "internal_name": "Image > Product > Crown Tonic1",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5UcMvW6JfoP7GOtD0r2UyZ/4d957d655cbfd270bbdef8f2a47ef8cb/CrownTonic_1.png",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/15cTRSzklcmgcMXFBnjUAE/e539231d1974f42b8823e3cafab0137a/CrownTonic_1.png"
+      },
+      {
+        "internal_name": "Image > Product > Crown Tonic2",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/3Jj1o7tOnh8vY5GosWF66H/cfbc461262d625b6b7dba0f860fd78d5/CrownTonic_2.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/6zxxU0Cb8Ehl7BoShkaSpS/62786c219d0fde5ea80d2f8a773a73c8/CrownTonic_2.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Crown Tonic3",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/7D1Fo307TCHQQXymHcLE4k/e37703b2926ab807828b6e71c4f52b8c/CrownTonic_3.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/2x4JVCnkOhMYMMrTcwb8ws/ec8c57ac049f5f6f30a1fcdd9d43f6aa/CrownTonic_3.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "1BCc2Atc0utLrBF1WC49jk",
+    "title": "Cure Liqueur Restorative Oil",
+    "slug": "cure-liqueur-restorative-oil",
+    "subtitle": "PREMIUM ADD-ON + 10 Minutes",
+    "price": 25,
+    "price_range": "$25",
+    "type": "Add On",
+    "best_for": "Damaged hair, split ends",
+    "service_time": null,
+    "is_new": false,
+    "product_id": "Cure Liqueur",
+    "booker_reference": "Cure Liqueur",
+    "url": "https://www.drybarshops.com/service/add-ons/#cure-liqueur-restorative-oil",
+    "images": [
+      {
+        "internal_name": "Image > Product > Cure Liqueur1",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/4hY3XzlVWr07ggts1UdHAV/44cabba608f64e68dce51b10bfdf4942/CureLiqueur_1.png",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/3DVwSuNupPZovyDxrBay5w/f364ec700b04eea4a5d025c4afebd254/CureLiqueur_1.png"
+      },
+      {
+        "internal_name": "Image > Product > Cure Liqueur2",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/xdXDl2y5DCtSGf6p2yhNC/e87fb6bc55c4af578f7ce6be75eebc1e/CureLiqueur_2.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/xdXDl2y5DCtSGf6p2yhNC/e87fb6bc55c4af578f7ce6be75eebc1e/CureLiqueur_2.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Cure Liqueur3",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/1RECkeHdBdMfWOMBTGi3h8/b16c5b07aa97250f5a0ea9d341fda48d/CureLiqueur_3.png",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/1RECkeHdBdMfWOMBTGi3h8/b16c5b07aa97250f5a0ea9d341fda48d/CureLiqueur_3.png"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "70KFyhQrnnjUUiasyIVSFL",
+    "title": "Dry Styling",
+    "slug": "dry-styling",
+    "subtitle": null,
+    "price": 35,
+    "price_range": "$35-45",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 30,
+    "is_new": null,
+    "product_id": "1727228",
+    "booker_reference": "Dry Styling",
+    "url": "https://www.drybarshops.com/the-styles/#dry-styling",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > Dry Styling Service ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/49IegE2KSW5cNJNchGFFEh/8b22e00d44f924822867ae62d0a01162/Services_8306_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/68GXsNm1HKM9h1rnOFa619/2e4b694de4d6ecaabcbed5cbe63bee91/Services_8306_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Services"
+    ]
+  },
+  {
+    "id": "2q0wXD7ip7bYFxDhmw7VKi",
+    "title": "Extended Blowout Time",
+    "slug": "extended-blowout-time",
+    "subtitle": "$30 for up to 30 minutes",
+    "price": 30,
+    "price_range": "$30",
+    "type": null,
+    "best_for": null,
+    "service_time": 30,
+    "is_new": false,
+    "product_id": "Extended Blowout Time",
+    "booker_reference": "Extended Blowout Time",
+    "url": "https://www.drybarshops.com/booking/services",
+    "images": [],
+    "categories": []
+  },
+  {
+    "id": "45ZtYdSeSMyCupVaA8xxlS",
+    "title": "Extended Time Blowout",
+    "slug": "extended-time-blowout",
+    "subtitle": "Gorgeous hair sometimes needs extra care. Book for services that will take 45-90 minutes.  If you need a services longer than 90 mon, please contact the shop to book.",
+    "price": 94,
+    "price_range": "$85-100",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 90,
+    "is_new": false,
+    "product_id": "Extended Time Blowout",
+    "booker_reference": "Extended Time Blowout",
+    "url": "https://www.drybarshops.com/the-styles/#extended-time-blowout",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > Extended Time Blowout",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/2XKEeyzAn6JrDMWjoPsVtt/364cfc4f7fd30a3a8cd86d3b30286ae5/108769_WBZ_DB_ExtendedTimeImage_714x714__1_.png",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/3ZVuoBZIAznQzPV8DlCZji/b51e54f7cd2bc1d4f11e9cedb2a12081/108769_WBZ_DB_ExtendedTimeImage_357x357__1_.png"
+      }
+    ],
+    "categories": []
+  },
+  {
+    "id": "7fChFP4ovNauQtuojjikr4",
+    "title": "Extended Time Blowout - 45-90 minutes",
+    "slug": "extended-blowout-time-90",
+    "subtitle": "Gorgeous hair sometimes needs extra care. Book for services that will take 45 - 90 minutes. If you need a service longer than 90 min, please contact the shop to book.",
+    "price": 30,
+    "price_range": "$30",
+    "type": "Service",
+    "best_for": "   ",
+    "service_time": 45,
+    "is_new": false,
+    "product_id": "Blowout with Extended Time - 45 - 90 Minutes",
+    "booker_reference": "Blowout with Extended Time - 45 - 90 Minutes",
+    "url": "https://www.drybarshops.com/the-styles/#extended-blowout-time-90",
+    "images": [],
+    "categories": [
+      "Services"
+    ]
+  },
+  {
+    "id": "2d0fGuYYcmQsRFCE58uXNz",
+    "title": "Liquid Glass Instant Glossing Rinse",
+    "slug": "liquid-glass-instant-glossing-rinse",
+    "subtitle": "A silky, high-shine finish in just 10 seconds!",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "Wavy, Curly, Straight, All Hair Types",
+    "service_time": null,
+    "is_new": false,
+    "product_id": "Liquid Glass Glossing Rinse",
+    "booker_reference": "Liquid Glass Glossing Rinse",
+    "url": "https://www.drybarshops.com/service/add-ons/#liquid-glass-instant-glossing-rinse",
+    "images": [
+      {
+        "internal_name": "Image > Product > Liquid Glass Rinse",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/1wixLyuap74LdbIxYxFb6v/b0bf0530426fb529c21510e2b42b041b/LiquidGlassGlossingRinse_1.png",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/6vYalEMHqcTK2oWiN6TEQ4/c48400f794f17b8d322ff7d245a67dbe/LiquidGlassGlossingRinse_1.png"
+      },
+      {
+        "internal_name": "Image > Product > Liquid Glass Rinse1",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/7b3QkqR1qg3ci3GJYbip6X/b0a59523e984c464db83f7d092ed4530/LiquidGlassGlossingRinse_2.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/3YWaAfWdLDWoNFN1Dv13C7/e86da38d3555541c6ef447948cc3f649/LiquidGlassGlossingRinse_2.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "135jHgEYySEBK1ktHTiHcl",
+    "title": "Liquid Glass Miracle Smoothing Sealant",
+    "slug": "liquid-glass",
+    "subtitle": "The ultimate frizz-fighter with a long-lasting silky finish",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "Dry, frizzy hair",
+    "service_time": null,
+    "is_new": null,
+    "product_id": "Liquid Glass Smoothing Sealant",
+    "booker_reference": "Liquid Glass Smoothing Sealant",
+    "url": "https://www.drybarshops.com/service/add-ons/#liquid-glass",
+    "images": [
+      {
+        "internal_name": "Image > Product > Liquid Glass > Product",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/4WxwywsqpQPlbVTXoAfEkb/f876356a61b434456c886ac13638f7be/AddOn_LiquidGlass_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/2ROfwoXDQGNp1V4bN6Bg8K/4ddd4a970f4fcfad519820da8444b165/AddOn_LiquidGlass_357x357.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Liquid Glass > Process",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5IFQIj1BJZ9jr8VhjPtesH/1fe6f28548f3af7c7f556e8119463d96/AddOn_LiquidGlass_0263_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/5nipSme0x1r7Ay7k0y9V5w/6811a3204393c2912b5cf1bd446604af/AddOn_LiquidGlass_0263_357x357.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Liquid Glass > Finish",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5Kkr3ICjN6702az7byV3xz/cc2a7535249c0f1952810bc44ca838e2/AddOn_LiquidGlass_0604_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/6i0obGIJNEwZTNCig72zE9/d92f6e030197712b939b708f4869f1e6/AddOn_LiquidGlass_0604_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "78oP94vfdZi0uf6TUFceMj",
+    "title": "Moisturizing + Hydrating Treatment",
+    "slug": "moisturizing-and-hydrating-treatment",
+    "subtitle": null,
+    "price": 15,
+    "price_range": "$15",
+    "type": null,
+    "best_for": null,
+    "service_time": null,
+    "is_new": false,
+    "product_id": null,
+    "booker_reference": "Moisturizing + Hydrating Treatment",
+    "url": "https://www.drybarshops.com/booking/services",
+    "images": [],
+    "categories": []
+  },
+  {
+    "id": "1vBkX1WFDDItJpxDGXduZW",
+    "title": "Mudslide Mask",
+    "slug": "mudslide",
+    "subtitle": "A deeply nourishing hair mask to rescue and repair hair.",
+    "price": 10,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "Dry, damaged, frizzy hair",
+    "service_time": null,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": "Mudslide Mask",
+    "url": "https://www.drybarshops.com/service/add-ons/#mudslide",
+    "images": [
+      {
+        "internal_name": "Image > Product > Mudslide ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/7jFXxVld7Xhr0wdKAyhYka/a8c69e36f7643ca1412a689f52357efd/AddOn_Mudslide_714x714__1_.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/PsgVCUXskHjl5lOCq1b62/7035e9cfcdfe5550f6fa695cc98819cb/AddOn_Mudslide_357x357__1_.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Mudslide > Process",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/6uJRvp5MoShGS706z51MmU/7d427a16d8c63ab5627e7323eb8e9273/AddOn_Mudslide_7850_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/6MqjO2a0WLcN5Llz7iuRQP/2f41469a8076945399bed0a3b10996a4/AddOn_Mudslide_7850_357x357.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Mudslide > Finish",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/2A2dl1nJZzIb9MfE8hHWn2/fa9a12bf9a61534f5081b941377cae92/AddOn_Mudslide_8257_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/7JRC3RQcQO3MspDChzgh7X/d01252b4b5194f5fca755c5d0e0d7243/AddOn_Mudslide_8257_357x357.jpg"
+      }
+    ],
+    "categories": []
+  },
+  {
+    "id": "3aYUbBd5LRu8PkZQLiEB9N",
+    "title": "Scalp Massage",
+    "slug": "scalp-massage",
+    "subtitle": "Invigorating 10-minute massage during your shampoo",
+    "price": 15,
+    "price_range": "$15",
+    "type": "Add On",
+    "best_for": "A little R&R",
+    "service_time": null,
+    "is_new": null,
+    "product_id": "Scalp Massage",
+    "booker_reference": "Scalp Massage",
+    "url": "https://www.drybarshops.com/service/add-ons/#scalp-massage",
+    "images": [
+      {
+        "internal_name": "Image > Product > Scalp Massage",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/35RNTOBRplK5Vb20r0JGOO/e6aa255d907a0926c9d0ab5417a93ae0/AddOn_ScalpMassage_2714_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/4gCjxDfYfl0O8ePtsiAUmX/a2aefa75f026e2b85c7f010217051ac4/AddOn_ScalpMassage_2714_357x357jpg.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Scalp Massage (2)",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/286xZNVVs6cb3kKgtKOTPT/4544b041873cb3edabeeb7492dc213c9/AddOn_ScalpMassage_7850_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/5b9ul9DbYAPvw174tfRaVG/5131dbdcd010f22a8ac3adddb9e04d93/AddOn_ScalpMassage_7850_357x357.jpg"
+      },
+      {
+        "internal_name": "Image > Product > Scalp Massage (3)",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/5v21pjoNYyDWGmYHs3ktgb/675c3289c6506e522cdee5ef5b6297c1/AddOn_ScalpMassage_7006_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/2sPsqM7rf0FiyHdeNDuhpL/c08c302b1a0eeeeb45fb2de97f645c6c/AddOn_ScalpMassage_7006_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Add Ons"
+    ]
+  },
+  {
+    "id": "2cB1FhHxQrEwGN0OunfzuZ",
+    "title": "The Blowout",
+    "slug": "blowout",
+    "subtitle": null,
+    "price": 55,
+    "price_range": "$55-70",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 45,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": "Blowout",
+    "url": "https://www.drybarshops.com/the-styles/#blowout",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > The Blowout ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/3DVNRVa3l6T6GNcpRtvOiC/c8eb1c98210d742cb5781f3df67c54b9/Services_7445_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/44oM6v9ZTnCLKYuIXHIoJy/2bdbfa7a692ebfdd0d26c4ff7483667f/Services_7445_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Services"
+    ]
+  },
+  {
+    "id": "6di8xH8wb6hYQKglnUjh9o",
+    "title": "The Shirley Temple (3-7 years)",
+    "slug": "the-shirley-temple",
+    "subtitle": null,
+    "price": 35,
+    "price_range": "$35-45",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 45,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": "The Shirley Temple (3-7 years)",
+    "url": "https://www.drybarshops.com/the-styles/#the-shirley-temple",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > The Shirley Temple Service ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/qcIFSynDceJlJAIkBLJSA/bf4d5f4148f6a1693bd4f6cf863c450a/Services_5368_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/6thNbiO6tc6OCoB7pRpwfv/bdf791dc6b1ac23a2f8c925b11809e04/Services_5368_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Services"
+    ]
+  },
+  {
+    "id": "3PuUL8TyatZAdC9Bh47ZgR",
+    "title": "The Up-Tini",
+    "slug": "uptini",
+    "subtitle": null,
+    "price": 99,
+    "price_range": "$99-170",
+    "type": "Service",
+    "best_for": null,
+    "service_time": 75,
+    "is_new": null,
+    "product_id": null,
+    "booker_reference": "The Up-Tini",
+    "url": "https://www.drybarshops.com/the-styles/#uptini",
+    "images": [
+      {
+        "internal_name": "Marketing > Image > The Uptini Service ",
+        "desktop_url": "https://images.ctfassets.net/13n1l6os99jz/7uGIppEpYEBJEtxwpD0ATj/ed5984091801aa2c165309fc9a7395b8/Services_0029_714x714.jpg",
+        "mobile_url": "https://images.ctfassets.net/13n1l6os99jz/2HodAfcGwntr8P8LegRJOB/feff39133573dca1737ebaf81c3f4220/Services_0029_357x357.jpg"
+      }
+    ],
+    "categories": [
+      "Services"
+    ]
+  }
+]
