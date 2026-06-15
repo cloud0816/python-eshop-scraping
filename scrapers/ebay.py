@@ -51,6 +51,9 @@ class EbayShopScraper:
         max_pages: int | None = None,
         delay_seconds: float = 1.0,
         verbose: bool = False,
+        use_openai: bool = False,
+        openai_api_key: str | None = None,
+        openai_model: str = "gpt-4o-mini",
     ) -> None:
         self.shop_input = shop.strip()
         self.session = session or requests.Session()
@@ -59,6 +62,10 @@ class EbayShopScraper:
         self.max_pages = max_pages
         self.delay_seconds = delay_seconds
         self.verbose = verbose
+        self.use_openai = use_openai
+        self.openai_api_key = openai_api_key
+        self.openai_model = openai_model
+        self._openai_extractor = None
         self.store_url = self._resolve_store_url(self.shop_input)
         self.store_slug = self._extract_store_slug(self.store_url)
 
@@ -96,12 +103,9 @@ class EbayShopScraper:
         return self._normalize_store_url(shop)
 
     def _fetch_html(self, url: str) -> str:
-        response = self.session.get(url, timeout=30)
-        response.raise_for_status()
-        html = response.text
-        if "Error Page | eBay" in html or "Something went wrong on our end" in html:
-            raise RuntimeError(f"eBay returned an error page for {url}")
-        return html
+        from scrapers.http import fetch_html
+
+        return fetch_html(url, session=self.session)
 
     def _resolve_user_profile_to_store(self, profile_url: str) -> str:
         html = self._fetch_html(profile_url.rstrip("/"))
@@ -216,7 +220,57 @@ class EbayShopScraper:
                 page_numbers.append(int(match.group(1)))
         return max(page_numbers) if page_numbers else None
 
+    def _get_openai_extractor(self):
+        if self._openai_extractor is None:
+            from scrapers.openai_extractor import OpenAIExtractor
+
+            self._openai_extractor = OpenAIExtractor(
+                api_key=self.openai_api_key,
+                model=self.openai_model,
+            )
+        return self._openai_extractor
+
+    def _parse_page_openai(self, html: str, page: int) -> list[EbayListing]:
+        products = self._get_openai_extractor().extract_products(
+            html,
+            self._build_page_url(page),
+            instructions=(
+                "Extract eBay store product listing cards only. "
+                "Include item_id when visible in URLs or data attributes."
+            ),
+        )
+        listings: list[EbayListing] = []
+        for product in products:
+            item_id = product.get("item_id")
+            url = product.get("url")
+            if not item_id and url:
+                match = ITEM_ID_PATTERN.search(url)
+                if match:
+                    item_id = match.group("item_id")
+            if not item_id or not product.get("title"):
+                continue
+
+            price = product.get("price")
+            listings.append(
+                EbayListing(
+                    item_id=item_id,
+                    title=product["title"],
+                    url=urljoin(EBAY_BASE_URL, f"/itm/{item_id}"),
+                    price=price,
+                    price_min=price,
+                    price_max=price,
+                    original_price=product.get("original_price"),
+                    image_url=product.get("image_url"),
+                    store_slug=self.store_slug,
+                    page=page,
+                )
+            )
+        return listings
+
     def _parse_page(self, html: str, page: int) -> list[EbayListing]:
+        if self.use_openai:
+            return self._parse_page_openai(html, page)
+
         soup = BeautifulSoup(html, "lxml")
         listings: list[EbayListing] = []
         for card in soup.select("article.StoreFrontItemCard, .StoreFrontItemCard"):
@@ -240,6 +294,9 @@ class EbayShopScraper:
         last_page = self.max_pages or detected_max_page or 1
 
         self._log(f"Page 1/{last_page}: found {len(listings)} listings")
+
+        if self.use_openai:
+            self._log("Using OpenAI extraction")
 
         for page in range(2, last_page + 1):
             if self.delay_seconds:
