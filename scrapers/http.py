@@ -14,6 +14,12 @@ DEFAULT_HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
+ERROR_MARKERS = (
+    "Error Page | eBay",
+    "Something went wrong on our end",
+    "Just a moment...",
+)
+
 
 def fetch_html(url: str, session: requests.Session | None = None) -> str:
     client = session or requests.Session()
@@ -21,4 +27,7 @@ def fetch_html(url: str, session: requests.Session | None = None) -> str:
         client.headers.update(DEFAULT_HEADERS)
     response = client.get(url, timeout=30)
     response.raise_for_status()
-    return response.text
+    html = response.text
+    if any(marker in html for marker in ERROR_MARKERS):
+        raise RuntimeError(f"Blocked or error page returned for {url}")
+    return html

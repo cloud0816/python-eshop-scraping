@@ -2,83 +2,93 @@
 
 from __future__ import annotations
 
-import json
 import os
+import re
 from typing import Any
 from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 from openai import OpenAI
+from pydantic import BaseModel, Field
 
-PRODUCT_LIST_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "products": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "title": {"type": "string"},
-                    "price": {"type": ["string", "null"]},
-                    "original_price": {"type": ["string", "null"]},
-                    "url": {"type": ["string", "null"]},
-                    "image_url": {"type": ["string", "null"]},
-                    "description": {"type": ["string", "null"]},
-                    "sku": {"type": ["string", "null"]},
-                    "item_id": {"type": ["string", "null"]},
-                },
-                "required": [
-                    "title",
-                    "price",
-                    "original_price",
-                    "url",
-                    "image_url",
-                    "description",
-                    "sku",
-                    "item_id",
-                ],
-                "additionalProperties": False,
-            },
-        }
-    },
-    "required": ["products"],
-    "additionalProperties": False,
-}
-
-SYSTEM_PROMPT = """You extract product listings from e-commerce HTML.
-Return every distinct product or service you can identify on the page.
-Use absolute URLs when possible. If a field is missing in the HTML, use null.
-Do not invent products that are not present in the provided HTML."""
+SYSTEM_PROMPT = """You extract product listings from e-commerce HTML snippets.
+Each snippet usually represents one product card from a shop page.
+Return every distinct product you can identify. Use absolute URLs when possible.
+If a field is missing, leave it null. Do not invent products not present in the HTML."""
 
 
-def simplify_html(html: str, max_chars: int = 100_000) -> str:
+class ExtractedProduct(BaseModel):
+    title: str
+    price: str | None = None
+    original_price: str | None = None
+    url: str | None = None
+    image_url: str | None = None
+    description: str | None = None
+    sku: str | None = None
+    item_id: str | None = None
+
+
+class ProductList(BaseModel):
+    products: list[ExtractedProduct] = Field(default_factory=list)
+
+
+def extract_relevant_html(html: str, max_chars: int = 250_000) -> str:
+    """Keep product-card markup instead of truncating the page head."""
     soup = BeautifulSoup(html, "lxml")
     for tag in soup(["script", "style", "noscript", "svg", "iframe", "meta", "link"]):
         tag.decompose()
-    simplified = str(soup)
-    if len(simplified) > max_chars:
-        return simplified[:max_chars] + "\n<!-- truncated -->"
-    return simplified
+
+    selector_groups = [
+        ["article.StoreFrontItemCard"],
+        [".StoreFrontItemCard"],
+        [".s-item"],
+        [".srp-results .s-item"],
+        [".product-card", ".product-item", ".grid-product", ".collection-product"],
+        [".str-item-card"],
+    ]
+
+    for selectors in selector_groups:
+        chunks: list[str] = []
+        for selector in selectors:
+            for element in soup.select(selector):
+                chunks.append(str(element))
+        if chunks:
+            combined = "\n".join(dict.fromkeys(chunks))
+            if len(combined) <= max_chars:
+                return combined
+            return combined[:max_chars] + "\n<!-- truncated -->"
+
+    body = soup.body or soup
+    fallback = str(body)
+    if len(fallback) <= max_chars:
+        return fallback
+    return fallback[:max_chars] + "\n<!-- truncated -->"
 
 
-def normalize_product(product: dict[str, Any], source_url: str) -> dict[str, Any]:
-    url = product.get("url")
+def normalize_product(product: ExtractedProduct, source_url: str) -> dict[str, Any]:
+    url = product.url
     if url and not url.startswith("http"):
         url = urljoin(source_url, url)
 
-    image_url = product.get("image_url")
+    image_url = product.image_url
     if image_url and not image_url.startswith("http"):
         image_url = urljoin(source_url, image_url)
 
+    item_id = product.item_id
+    if not item_id and url:
+        match = re.search(r"/itm/(?P<item_id>\d+)", url)
+        if match:
+            item_id = match.group("item_id")
+
     return {
-        "title": product["title"].strip(),
-        "price": product.get("price"),
-        "original_price": product.get("original_price"),
+        "title": product.title.strip(),
+        "price": product.price,
+        "original_price": product.original_price,
         "url": url,
         "image_url": image_url,
-        "description": product.get("description"),
-        "sku": product.get("sku"),
-        "item_id": product.get("item_id"),
+        "description": product.description,
+        "sku": product.sku,
+        "item_id": item_id,
         "source_url": source_url,
     }
 
@@ -90,7 +100,7 @@ class OpenAIExtractor:
         self,
         api_key: str | None = None,
         model: str = "gpt-4o-mini",
-        max_html_chars: int = 100_000,
+        max_html_chars: int = 250_000,
     ) -> None:
         resolved_key = api_key or os.environ.get("OPENAI_API_KEY")
         if not resolved_key:
@@ -107,34 +117,29 @@ class OpenAIExtractor:
         source_url: str,
         instructions: str | None = None,
     ) -> list[dict[str, Any]]:
-        simplified = simplify_html(html, max_chars=self.max_html_chars)
+        relevant_html = extract_relevant_html(html, max_chars=self.max_html_chars)
         user_prompt = (
             f"Source URL: {source_url}\n\n"
-            f"Extract all product listings from this HTML:\n\n{simplified}"
+            f"Extract all product listings from these HTML snippets:\n\n{relevant_html}"
         )
         if instructions:
             user_prompt += f"\n\nAdditional instructions:\n{instructions}"
 
-        response = self.client.chat.completions.create(
+        completion = self.client.beta.chat.completions.parse(
             model=self.model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_prompt},
             ],
-            response_format={
-                "type": "json_schema",
-                "json_schema": {
-                    "name": "product_list",
-                    "strict": True,
-                    "schema": PRODUCT_LIST_SCHEMA,
-                },
-            },
+            response_format=ProductList,
         )
 
-        content = response.choices[0].message.content
-        if not content:
-            raise RuntimeError("OpenAI returned an empty response")
+        message = completion.choices[0].message
+        if message.refusal:
+            raise RuntimeError(f"OpenAI refused the request: {message.refusal}")
 
-        payload = json.loads(content)
-        products = payload.get("products") or []
-        return [normalize_product(product, source_url) for product in products]
+        parsed = message.parsed
+        if parsed is None:
+            raise RuntimeError("OpenAI returned no parsed product data")
+
+        return [normalize_product(product, source_url) for product in parsed.products]

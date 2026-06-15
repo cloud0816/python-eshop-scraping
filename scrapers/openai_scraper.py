@@ -41,19 +41,19 @@ class OpenAIScraper:
 
     @staticmethod
     def _build_page_url(base_url: str, page: int) -> str:
-        parsed = urlparse(base_url)
-        query = parse_qs(parsed.query)
-
         if page == 1:
             return base_url
 
-        if "_pgn" in query or "page" in query or re.search(r"_pgn=", base_url):
+        parsed = urlparse(base_url)
+        query = parse_qs(parsed.query)
+
+        if "/str/" in parsed.path or "_pgn" in query:
+            query["_pgn"] = [str(page)]
+            query.setdefault("rt", ["nc"])
+        elif "_ssn" in query or "/sch/" in parsed.path:
             query["_pgn"] = [str(page)]
         else:
             query["page"] = [str(page)]
-
-        if page > 1:
-            query.setdefault("rt", ["nc"])
 
         new_query = urlencode({key: values[-1] for key, values in query.items()})
         return urlunparse(parsed._replace(query=new_query))

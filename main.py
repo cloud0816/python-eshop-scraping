@@ -19,6 +19,16 @@ from scrapers.openai_scraper import OpenAIScraper
 load_dotenv()
 
 
+def resolve_openai_api_key(explicit_key: str | None) -> str:
+    api_key = (explicit_key or os.environ.get("OPENAI_API_KEY") or "").strip()
+    if not api_key:
+        raise ValueError(
+            "OpenAI API key is required. Set OPENAI_API_KEY in your environment "
+            "or .env file, or pass --api-key."
+        )
+    return api_key
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Scrape product listings from e-shops.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -75,7 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ebay.add_argument(
         "--api-key",
-        default=os.environ.get("OPENAI_API_KEY"),
+        default=None,
         help="OpenAI API key (default: OPENAI_API_KEY env var)",
     )
     ebay.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
@@ -114,7 +124,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     openai_cmd.add_argument(
         "--api-key",
-        default=os.environ.get("OPENAI_API_KEY"),
+        default=None,
         help="OpenAI API key (default: OPENAI_API_KEY env var)",
     )
     openai_cmd.add_argument(
@@ -172,6 +182,7 @@ def run_drybar(args: argparse.Namespace) -> None:
 
 
 def run_ebay(args: argparse.Namespace) -> None:
+    api_key = resolve_openai_api_key(args.api_key) if args.openai else args.api_key
     scraper = EbayShopScraper(
         shop=args.shop,
         max_pages=args.max_pages,
@@ -179,7 +190,7 @@ def run_ebay(args: argparse.Namespace) -> None:
         delay_seconds=args.delay,
         verbose=True,
         use_openai=args.openai,
-        openai_api_key=args.api_key,
+        openai_api_key=api_key,
         openai_model=args.model,
     )
 
@@ -204,8 +215,9 @@ def run_ebay(args: argparse.Namespace) -> None:
 
 
 def run_openai(args: argparse.Namespace) -> None:
+    api_key = resolve_openai_api_key(args.api_key)
     scraper = OpenAIScraper(
-        api_key=args.api_key,
+        api_key=api_key,
         model=args.model,
         max_pages=args.max_pages,
         delay_seconds=args.delay,
@@ -232,14 +244,17 @@ def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
 
-    if args.command == "drybarshops":
-        run_drybar(args)
-    elif args.command == "ebay":
-        run_ebay(args)
-    elif args.command == "openai":
-        run_openai(args)
-    else:
-        parser.error(f"Unknown command: {args.command}")
+    try:
+        if args.command == "drybarshops":
+            run_drybar(args)
+        elif args.command == "ebay":
+            run_ebay(args)
+        elif args.command == "openai":
+            run_openai(args)
+        else:
+            parser.error(f"Unknown command: {args.command}")
+    except ValueError as error:
+        parser.error(str(error))
 
 
 if __name__ == "__main__":

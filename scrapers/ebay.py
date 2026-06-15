@@ -103,12 +103,9 @@ class EbayShopScraper:
         return self._normalize_store_url(shop)
 
     def _fetch_html(self, url: str) -> str:
-        response = self.session.get(url, timeout=30)
-        response.raise_for_status()
-        html = response.text
-        if "Error Page | eBay" in html or "Something went wrong on our end" in html:
-            raise RuntimeError(f"eBay returned an error page for {url}")
-        return html
+        from scrapers.http import fetch_html
+
+        return fetch_html(url, session=self.session)
 
     def _resolve_user_profile_to_store(self, profile_url: str) -> str:
         html = self._fetch_html(profile_url.rstrip("/"))
