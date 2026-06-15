@@ -50,6 +50,7 @@ class EbayShopScraper:
         items_per_page: int | None = None,
         max_pages: int | None = None,
         delay_seconds: float = 1.0,
+        verbose: bool = False,
     ) -> None:
         self.shop_input = shop.strip()
         self.session = session or requests.Session()
@@ -57,8 +58,13 @@ class EbayShopScraper:
         self.items_per_page = items_per_page
         self.max_pages = max_pages
         self.delay_seconds = delay_seconds
+        self.verbose = verbose
         self.store_url = self._resolve_store_url(self.shop_input)
         self.store_slug = self._extract_store_slug(self.store_url)
+
+    def _log(self, message: str) -> None:
+        if self.verbose:
+            print(message)
 
     @staticmethod
     def _extract_store_slug(url: str) -> str | None:
@@ -130,11 +136,12 @@ class EbayShopScraper:
         str | None,
     ]:
         amounts = PRICE_PATTERN.findall(price_text.replace("to", " "))
-        price = amounts[0] if len(amounts) == 1 else None
-        price_min = amounts[0] if amounts else None
-        price_max = amounts[1] if len(amounts) > 1 else price_min
-        if len(amounts) > 1:
-            price = f"{price_min} to {price_max}"
+        if not amounts:
+            return None, None, None, None
+
+        price_min = amounts[0]
+        price_max = amounts[-1] if len(amounts) > 1 else price_min
+        price = f"{price_min} to {price_max}" if len(amounts) > 1 else price_min
         original_price = None
         if original_text:
             original_amounts = PRICE_PATTERN.findall(original_text)
@@ -232,12 +239,15 @@ class EbayShopScraper:
         detected_max_page = self._parse_max_page(first_html)
         last_page = self.max_pages or detected_max_page or 1
 
+        self._log(f"Page 1/{last_page}: found {len(listings)} listings")
+
         for page in range(2, last_page + 1):
             if self.delay_seconds:
                 time.sleep(self.delay_seconds)
 
             page_listings = self.fetch_page(page)
             if not page_listings:
+                self._log(f"Page {page}/{last_page}: no listings, stopping")
                 break
 
             new_items = [
@@ -246,10 +256,15 @@ class EbayShopScraper:
                 if listing.item_id not in seen_ids
             ]
             if not new_items:
+                self._log(f"Page {page}/{last_page}: no new listings, stopping")
                 break
 
             listings.extend(new_items)
             seen_ids.update(listing.item_id for listing in new_items)
+            self._log(
+                f"Page {page}/{last_page}: found {len(new_items)} new listings "
+                f"({len(listings)} total)"
+            )
 
         return listings
 
