@@ -2,12 +2,16 @@
 
 from __future__ import annotations
 
+import json
 import time
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal, InvalidOperation
 from typing import Any
 from urllib.parse import urljoin
 
 import requests
+
+from scrapers.http import DEFAULT_HEADERS
 
 BASE_URL = "https://youngheartslingerie.com"
 PRODUCTS_JSON_URL = f"{BASE_URL}/products.json"
@@ -63,6 +67,12 @@ class YoungHeartsLingerieScraper:
         verbose: bool = False,
     ) -> None:
         self.session = session or requests.Session()
+        if not session:
+            self.session.headers.update(DEFAULT_HEADERS)
+        self.session.headers.setdefault(
+            "Accept",
+            "application/json",
+        )
         self.session.headers.setdefault(
             "User-Agent",
             "python-eshop-scraping/1.0 (+https://youngheartslingerie.com/)",
@@ -79,14 +89,89 @@ class YoungHeartsLingerieScraper:
             timeout=30,
         )
         response.raise_for_status()
-        return response.json().get("products") or []
+
+        content_type = response.headers.get("Content-Type", "")
+        if "json" not in content_type.lower():
+            raise RuntimeError(
+                f"Expected JSON from {PRODUCTS_JSON_URL} (page {page}), "
+                f"got {content_type or 'unknown content type'}"
+            )
+
+        try:
+            payload = response.json()
+        except json.JSONDecodeError as error:
+            raise RuntimeError(
+                f"Invalid JSON from {PRODUCTS_JSON_URL} (page {page}): {error}"
+            ) from error
+
+        products = payload.get("products")
+        if products is None:
+            raise RuntimeError(
+                f"Missing 'products' key in Shopify response for page {page}"
+            )
+        if not isinstance(products, list):
+            raise RuntimeError(
+                f"Expected 'products' to be a list on page {page}, got {type(products).__name__}"
+            )
+        return products
 
     @staticmethod
-    def _variant_prices(variants: list[dict[str, Any]]) -> tuple[str | None, str | None]:
-        prices = [variant["price"] for variant in variants if variant.get("price")]
-        if not prices:
-            return None, None
-        return min(prices), max(prices)
+    def _parse_price(value: Any) -> Decimal | None:
+        if value in (None, ""):
+            return None
+        try:
+            return Decimal(str(value))
+        except (InvalidOperation, ValueError, TypeError):
+            return None
+
+    @staticmethod
+    def _format_price(value: Decimal) -> str:
+        return f"{value.quantize(Decimal('0.01'))}"
+
+    @classmethod
+    def _variant_prices(
+        cls,
+        variants: list[dict[str, Any]],
+    ) -> tuple[str | None, str | None, str | None]:
+        priced_variants: list[tuple[Decimal, dict[str, Any]]] = []
+        for variant in variants:
+            price = cls._parse_price(variant.get("price"))
+            if price is not None:
+                priced_variants.append((price, variant))
+
+        if not priced_variants:
+            return None, None, None
+
+        price_values = [price for price, _ in priced_variants]
+        price_min = min(price_values)
+        price_max = max(price_values)
+
+        compare_at_price = None
+        for price, variant in priced_variants:
+            if price != price_min:
+                continue
+            compare_at = cls._parse_price(variant.get("compare_at_price"))
+            if compare_at is not None and compare_at > price:
+                compare_at_price = cls._format_price(compare_at)
+                break
+
+        if compare_at_price is None:
+            for _, variant in priced_variants:
+                price = cls._parse_price(variant.get("price"))
+                compare_at = cls._parse_price(variant.get("compare_at_price"))
+                if (
+                    price is not None
+                    and compare_at is not None
+                    and compare_at > price
+                ):
+                    compare_at_price = cls._format_price(compare_at)
+                    break
+
+        return (
+            cls._format_price(price_min),
+            cls._format_price(price_max),
+            compare_at_price,
+        )
 
     @staticmethod
     def _normalize_variant(item: dict[str, Any]) -> ProductVariant:
@@ -113,15 +198,9 @@ class YoungHeartsLingerieScraper:
     def _normalize_product(self, item: dict[str, Any]) -> Product:
         handle = (item.get("handle") or "").strip()
         variants = [self._normalize_variant(variant) for variant in item.get("variants") or []]
-        price_min, price_max = self._variant_prices(item.get("variants") or [])
+        price_min, price_max, compare_at_price = self._variant_prices(item.get("variants") or [])
         images = [image["src"] for image in item.get("images") or [] if image.get("src")]
         tags = self._parse_tags(item.get("tags"))
-
-        compare_prices = [
-            variant.compare_at_price
-            for variant in variants
-            if variant.compare_at_price and variant.compare_at_price != variant.price
-        ]
 
         return Product(
             id=item["id"],
@@ -135,7 +214,7 @@ class YoungHeartsLingerieScraper:
             price=price_min,
             price_min=price_min,
             price_max=price_max,
-            compare_at_price=compare_prices[0] if compare_prices else None,
+            compare_at_price=compare_at_price,
             image_url=images[0] if images else None,
             images=images,
             sku=variants[0].sku if variants else None,
@@ -157,6 +236,11 @@ class YoungHeartsLingerieScraper:
 
             items = self._fetch_page(page)
             if not items:
+                if page == 1:
+                    raise RuntimeError(
+                        f"No products returned from {PRODUCTS_JSON_URL}. "
+                        "The store API may be unavailable or blocking requests."
+                    )
                 break
 
             if self.verbose:
@@ -164,6 +248,8 @@ class YoungHeartsLingerieScraper:
 
             for item in items:
                 product_id = item.get("id")
+                if not product_id:
+                    continue
                 if product_id in seen_ids:
                     continue
                 seen_ids.add(product_id)
