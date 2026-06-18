@@ -16,6 +16,7 @@ from scrapers.drybarshops import DrybarShopsScraper
 from scrapers.ebay import EbayShopScraper
 from scrapers.ebay_people import EbayPeopleScraper
 from scrapers.openai_scraper import OpenAIScraper
+from scrapers.youngheartslingerie import YoungHeartsLingerieScraper
 
 load_dotenv()
 
@@ -43,6 +44,31 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to write JSON output",
     )
     drybar.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
+
+    younghearts = subparsers.add_parser(
+        "youngheartslingerie",
+        help="Scrape youngheartslingerie.com catalog",
+    )
+    younghearts.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=Path("output/youngheartslingerie_products.json"),
+        help="Path to write JSON output",
+    )
+    younghearts.add_argument(
+        "--max-pages",
+        type=int,
+        default=None,
+        help="Maximum number of API pages to scrape (default: all pages)",
+    )
+    younghearts.add_argument(
+        "--delay",
+        type=float,
+        default=0.5,
+        help="Delay in seconds between page requests (default: 0.5)",
+    )
+    younghearts.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
 
     ebay = subparsers.add_parser("ebay", help="Scrape an eBay store product list")
     ebay.add_argument(
@@ -216,6 +242,34 @@ def default_openai_output(url: str) -> Path:
     return Path(f"output/openai_{slug}_products.json")
 
 
+def format_younghearts_price(product: dict) -> str:
+    price = product.get("price")
+    original = product.get("compare_at_price")
+    if price and original:
+        return f"${price} (was ${original})"
+    return f"${price}" if price else "N/A"
+
+
+def run_youngheartslingerie(args: argparse.Namespace) -> None:
+    scraper = YoungHeartsLingerieScraper(
+        max_pages=args.max_pages,
+        delay_seconds=args.delay,
+        verbose=True,
+    )
+    print("Scraping Young Hearts Lingerie catalog...")
+    products = scraper.scrape()
+    save_output(args.output, products)
+
+    print(f"\nSaved {len(products)} products to {args.output.as_posix()}")
+    print("\nSample products:")
+    for product in products[:5]:
+        product_type = product.get("product_type") or "Uncategorized"
+        print(f"  - {product['title']} [{format_younghearts_price(product)}] ({product_type})")
+
+    if args.pretty:
+        print("\n" + json.dumps(products, indent=2, ensure_ascii=False))
+
+
 def run_drybar(args: argparse.Namespace) -> None:
     products = DrybarShopsScraper().scrape()
     save_output(args.output, products)
@@ -381,6 +435,8 @@ def main() -> None:
     try:
         if args.command == "drybarshops":
             run_drybar(args)
+        elif args.command == "youngheartslingerie":
+            run_youngheartslingerie(args)
         elif args.command == "ebay":
             run_ebay(args)
         elif args.command == "people":
