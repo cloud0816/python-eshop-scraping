@@ -38,6 +38,10 @@ class EbayListing:
     store_slug: str | None
     page: int
     categories: list[str] = field(default_factory=list)
+    owner_username: str | None = None
+    store_name: str | None = None
+    seller_id: str | None = None
+    seller_profile_url: str | None = None
 
 
 class EbayShopScraper:
@@ -54,6 +58,7 @@ class EbayShopScraper:
         use_openai: bool = False,
         openai_api_key: str | None = None,
         openai_model: str = "gpt-4o-mini",
+        include_owner: bool = True,
     ) -> None:
         self.shop_input = shop.strip()
         self.session = session or requests.Session()
@@ -65,7 +70,9 @@ class EbayShopScraper:
         self.use_openai = use_openai
         self.openai_api_key = openai_api_key
         self.openai_model = openai_model
+        self.include_owner = include_owner
         self._openai_extractor = None
+        self._store_owner: dict[str, str | None] | None = None
         self.store_url = self._resolve_store_url(self.shop_input)
         self.store_slug = self._extract_store_slug(self.store_url)
 
@@ -106,6 +113,34 @@ class EbayShopScraper:
         from scrapers.http import fetch_html
 
         return fetch_html(url, session=self.session)
+
+    def _get_store_owner(self) -> dict[str, str | None]:
+        if self._store_owner is not None:
+            return self._store_owner
+
+        from scrapers.ebay_metadata import build_profile_url, extract_store_metadata
+
+        html = self._fetch_html(self.store_url)
+        metadata = extract_store_metadata(html)
+        owner_username = metadata.get("owner_username")
+        self._store_owner = {
+            "owner_username": owner_username,
+            "store_name": metadata.get("store_name"),
+            "seller_id": metadata.get("seller_id") or owner_username,
+            "seller_profile_url": build_profile_url(owner_username),
+        }
+        return self._store_owner
+
+    def _attach_owner(self, listing: EbayListing) -> EbayListing:
+        if not self.include_owner:
+            return listing
+
+        owner = self._get_store_owner()
+        listing.owner_username = owner.get("owner_username")
+        listing.store_name = owner.get("store_name")
+        listing.seller_id = owner.get("seller_id")
+        listing.seller_profile_url = owner.get("seller_profile_url")
+        return listing
 
     def _resolve_user_profile_to_store(self, profile_url: str) -> str:
         html = self._fetch_html(profile_url.rstrip("/"))
@@ -197,17 +232,19 @@ class EbayShopScraper:
         image_url = image.get("src") if image else None
         listing_url = urljoin(EBAY_BASE_URL, f"/itm/{item_id}")
 
-        return EbayListing(
-            item_id=item_id,
-            title=title,
-            url=listing_url,
-            price=price,
-            price_min=price_min,
-            price_max=price_max,
-            original_price=original_price,
-            image_url=image_url,
-            store_slug=self.store_slug,
-            page=page,
+        return self._attach_owner(
+            EbayListing(
+                item_id=item_id,
+                title=title,
+                url=listing_url,
+                price=price,
+                price_min=price_min,
+                price_max=price_max,
+                original_price=original_price,
+                image_url=image_url,
+                store_slug=self.store_slug,
+                page=page,
+            )
         )
 
     def _parse_max_page(self, html: str) -> int | None:
@@ -252,17 +289,19 @@ class EbayShopScraper:
 
             price = product.get("price")
             listings.append(
-                EbayListing(
-                    item_id=item_id,
-                    title=product["title"],
-                    url=urljoin(EBAY_BASE_URL, f"/itm/{item_id}"),
-                    price=price,
-                    price_min=price,
-                    price_max=price,
-                    original_price=product.get("original_price"),
-                    image_url=product.get("image_url"),
-                    store_slug=self.store_slug,
-                    page=page,
+                self._attach_owner(
+                    EbayListing(
+                        item_id=item_id,
+                        title=product["title"],
+                        url=urljoin(EBAY_BASE_URL, f"/itm/{item_id}"),
+                        price=price,
+                        price_min=price,
+                        price_max=price,
+                        original_price=product.get("original_price"),
+                        image_url=product.get("image_url"),
+                        store_slug=self.store_slug,
+                        page=page,
+                    )
                 )
             )
         return listings

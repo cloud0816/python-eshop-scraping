@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 from scrapers.drybarshops import DrybarShopsScraper
 from scrapers.ebay import EbayShopScraper
+from scrapers.ebay_people import EbayPeopleScraper
 from scrapers.openai_scraper import OpenAIScraper
 
 load_dotenv()
@@ -88,7 +89,49 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="OpenAI API key (default: OPENAI_API_KEY env var)",
     )
+    ebay.add_argument(
+        "--no-owner",
+        action="store_true",
+        help="Skip attaching store owner/seller fields to each listing",
+    )
     ebay.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
+
+    people = subparsers.add_parser(
+        "people",
+        help="Scrape eBay store owner profile and people/founder mentions",
+    )
+    people.add_argument(
+        "shop",
+        help="Store slug, /str/{slug} URL, or /usr/{seller} profile URL",
+    )
+    people.add_argument(
+        "-o",
+        "--output",
+        type=Path,
+        default=None,
+        help="Path to write JSON output (default: output/ebay_{shop}_people.json)",
+    )
+    people.add_argument(
+        "--openai",
+        action="store_true",
+        help="Also use OpenAI to identify founders and key people for the brand",
+    )
+    people.add_argument(
+        "--no-wikidata",
+        action="store_true",
+        help="Skip Wikidata lookup for company founders and executives",
+    )
+    people.add_argument(
+        "--model",
+        default="gpt-4o-mini",
+        help="OpenAI model when --openai is set (default: gpt-4o-mini)",
+    )
+    people.add_argument(
+        "--api-key",
+        default=None,
+        help="OpenAI API key (default: OPENAI_API_KEY env var)",
+    )
+    people.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
 
     openai_cmd = subparsers.add_parser(
         "openai",
@@ -144,6 +187,13 @@ def save_output(path: Path, products: list[dict]) -> None:
         handle.write("\n")
 
 
+def save_json(path: Path, data: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, indent=2, ensure_ascii=False)
+        handle.write("\n")
+
+
 def format_ebay_price(product: dict) -> str:
     price = product.get("price") or product.get("price_min")
     original = product.get("original_price")
@@ -192,6 +242,7 @@ def run_ebay(args: argparse.Namespace) -> None:
         use_openai=args.openai,
         openai_api_key=api_key,
         openai_model=args.model,
+        include_owner=not args.no_owner,
     )
 
     mode = "OpenAI" if args.openai else "HTML"
@@ -206,12 +257,95 @@ def run_ebay(args: argparse.Namespace) -> None:
     save_output(output, products)
 
     print(f"\nSaved {len(products)} products to {output.as_posix()}")
+    if products and products[0].get("owner_username"):
+        print(
+            f"Store owner: {products[0]['owner_username']} "
+            f"({products[0].get('store_name') or 'N/A'})"
+        )
     print("\nSample listings:")
     for product in products[:5]:
         print(f"  - {product['title']} [{format_ebay_price(product)}]")
 
     if args.pretty:
         print("\n" + json.dumps(products, indent=2, ensure_ascii=False))
+
+
+def run_people(args: argparse.Namespace) -> None:
+    api_key = resolve_openai_api_key(args.api_key) if args.openai else args.api_key
+    scraper = EbayPeopleScraper(
+        shop=args.shop,
+        verbose=True,
+        use_openai=args.openai,
+        use_wikidata=not args.no_wikidata,
+        openai_api_key=api_key,
+        openai_model=args.model,
+    )
+    sources = []
+    if not args.no_wikidata:
+        sources.append("Wikidata")
+    sources.append("eBay")
+    if args.openai:
+        sources.append("OpenAI")
+    print(
+        f"Scraping eBay store people/founders ({' + '.join(sources)}): "
+        f"{scraper.store_url}"
+    )
+    profile = scraper.scrape()
+
+    output = args.output
+    if output is None:
+        slug = scraper.store_slug or "shop"
+        output = Path(f"output/ebay_{slug}_people.json")
+
+    save_json(output, profile)
+
+    print(f"\nSaved store profile to {output.as_posix()}")
+    print(f"  Store: {profile.get('store_name') or profile.get('store_slug')}")
+    if profile.get("company_name") and profile.get("company_name") != profile.get("store_name"):
+        print(f"  Company: {profile['company_name']}")
+    if profile.get("company_description"):
+        print(f"  Company info: {profile['company_description']}")
+    if profile.get("founded_year"):
+        print(f"  Founded: {profile['founded_year']}")
+    if profile.get("wikidata_url"):
+        print(f"  Wikidata: {profile['wikidata_url']}")
+    print(f"  Owner: {profile.get('owner_username') or 'N/A'}")
+    if profile.get("seller_display_name"):
+        print(f"  Display name: {profile['seller_display_name']}")
+    if profile.get("seller_badge"):
+        print(f"  Badge: {profile['seller_badge']}")
+    if profile.get("location"):
+        print(f"  Location: {profile['location']}")
+    if profile.get("member_since"):
+        print(f"  Member since: {profile['member_since']}")
+    if profile.get("feedback_summary"):
+        print(f"  Feedback: {profile['feedback_summary']}")
+
+    people = profile.get("people") or []
+    print(f"\nPeople ({len(people)}):")
+    if not people:
+        print("  (none found)")
+        if not args.openai and not args.no_wikidata:
+            print("  Tip: pass --openai for additional enrichment when Wikidata has no match")
+        elif args.no_wikidata and not args.openai:
+            print("  Tip: Wikidata is enabled by default; pass --openai for brand knowledge fallback")
+    for person in people:
+        details = person.get("details")
+        suffix = f" — {details}" if details else ""
+        wikidata = person.get("wikidata_id")
+        if wikidata:
+            suffix = f"{suffix} [{wikidata}]" if suffix else f" [{wikidata}]"
+        print(
+            f"  - {person['name']} ({person['role']}) "
+            f"[{person.get('source')}]{suffix}"
+        )
+
+    if profile.get("about_intro"):
+        intro = profile["about_intro"]
+        print(f"\nAbout: {intro[:200]}{'...' if len(intro) > 200 else ''}")
+
+    if args.pretty:
+        print("\n" + json.dumps(profile, indent=2, ensure_ascii=False))
 
 
 def run_openai(args: argparse.Namespace) -> None:
@@ -249,6 +383,8 @@ def main() -> None:
             run_drybar(args)
         elif args.command == "ebay":
             run_ebay(args)
+        elif args.command == "people":
+            run_people(args)
         elif args.command == "openai":
             run_openai(args)
         else:
