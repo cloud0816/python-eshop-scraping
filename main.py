@@ -111,6 +111,21 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Path to write JSON output (default: output/ebay_{shop}_people.json)",
     )
+    people.add_argument(
+        "--openai",
+        action="store_true",
+        help="Use OpenAI to identify founders and key people for the brand",
+    )
+    people.add_argument(
+        "--model",
+        default="gpt-4o-mini",
+        help="OpenAI model when --openai is set (default: gpt-4o-mini)",
+    )
+    people.add_argument(
+        "--api-key",
+        default=None,
+        help="OpenAI API key (default: OPENAI_API_KEY env var)",
+    )
     people.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
 
     openai_cmd = subparsers.add_parser(
@@ -251,8 +266,16 @@ def run_ebay(args: argparse.Namespace) -> None:
 
 
 def run_people(args: argparse.Namespace) -> None:
-    scraper = EbayPeopleScraper(shop=args.shop, verbose=True)
-    print(f"Scraping eBay store people/founders: {scraper.store_url}")
+    api_key = resolve_openai_api_key(args.api_key) if args.openai else args.api_key
+    scraper = EbayPeopleScraper(
+        shop=args.shop,
+        verbose=True,
+        use_openai=args.openai,
+        openai_api_key=api_key,
+        openai_model=args.model,
+    )
+    mode = "OpenAI + HTML" if args.openai else "HTML"
+    print(f"Scraping eBay store people/founders ({mode}): {scraper.store_url}")
     profile = scraper.scrape()
 
     output = args.output
@@ -265,6 +288,10 @@ def run_people(args: argparse.Namespace) -> None:
     print(f"\nSaved store profile to {output.as_posix()}")
     print(f"  Store: {profile.get('store_name') or profile.get('store_slug')}")
     print(f"  Owner: {profile.get('owner_username') or 'N/A'}")
+    if profile.get("seller_display_name"):
+        print(f"  Display name: {profile['seller_display_name']}")
+    if profile.get("seller_badge"):
+        print(f"  Badge: {profile['seller_badge']}")
     if profile.get("location"):
         print(f"  Location: {profile['location']}")
     if profile.get("member_since"):
@@ -274,8 +301,14 @@ def run_people(args: argparse.Namespace) -> None:
 
     people = profile.get("people") or []
     print(f"\nPeople ({len(people)}):")
+    if not people:
+        print("  (none found in about page text)")
+        if not args.openai:
+            print("  Tip: pass --openai to identify brand founders from public knowledge")
     for person in people:
-        print(f"  - {person['name']} ({person['role']})")
+        details = person.get("details")
+        suffix = f" — {details}" if details else ""
+        print(f"  - {person['name']} ({person['role']}) [{person.get('source')}]{suffix}")
 
     if profile.get("about_intro"):
         intro = profile["about_intro"]

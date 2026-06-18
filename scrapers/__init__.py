@@ -2,6 +2,7 @@ from scrapers.drybarshops import DrybarShopsScraper
 from scrapers.ebay import EbayShopScraper
 from scrapers.ebay_people import EbayPeopleScraper
 from scrapers.openai_extractor import OpenAIExtractor
+from scrapers.openai_people_extractor import OpenAIPeopleExtractor
 from scrapers.openai_scraper import OpenAIScraper
 
 __all__ = [
@@ -9,5 +10,6 @@ __all__ = [
     "EbayPeopleScraper",
     "EbayShopScraper",
     "OpenAIExtractor",
+    "OpenAIPeopleExtractor",
     "OpenAIScraper",
 ]
