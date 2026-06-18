@@ -57,6 +57,35 @@ FOUNDER_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     ),
     (
         re.compile(
+            r"\bstarted by\s+([A-Z][a-zA-Z\.\'-]+(?:\s+[A-Z][a-zA-Z\.\'-]+){0,3})",
+            re.I,
+        ),
+        "founder",
+    ),
+    (
+        re.compile(
+            r"\b(?:family[- ]owned(?: and operated)? by|owned and operated by|run by)\s+"
+            r"([A-Z][a-zA-Z\.\'-]+(?:\s+[A-Z][a-zA-Z\.\'-]+){0,3})",
+            re.I,
+        ),
+        "owner",
+    ),
+    (
+        re.compile(
+            r"\bour founder[s]?,?\s+([A-Z][a-zA-Z\.\'-]+(?:\s+[A-Z][a-zA-Z\.\'-]+){0,3})",
+            re.I,
+        ),
+        "founder",
+    ),
+    (
+        re.compile(
+            r"\b([A-Z][a-zA-Z\.\'-]+(?:\s+[A-Z][a-zA-Z\.\'-]+){0,3})\s+founded\b",
+            re.I,
+        ),
+        "founder",
+    ),
+    (
+        re.compile(
             r"\bCEO\s*(?:is|:)\s+([A-Z][a-zA-Z\.\'-]+(?:\s+[A-Z][a-zA-Z\.\'-]+){0,3})",
             re.I,
         ),
@@ -72,9 +101,41 @@ FOUNDER_PATTERNS: tuple[tuple[re.Pattern[str], str], ...] = (
     ),
 )
 
-TRAILING_NAME_PATTERN = re.compile(
-    r"\s+(?:in|leads|and|who|with|of|at|for|the|was|has|have|from)\b.*",
+FOUNDED_YEAR_PATTERN = re.compile(
+    r"\b(?:founded|established|started|since)\s+(?:in\s+)?((?:19|20)\d{2})\b",
     re.I,
+)
+
+TRAILING_NAME_PATTERN = re.compile(
+    r"\s+(?:in|leads|and|who|with|of|at|for|the|was|has|have|from|on|to)\b.*",
+    re.I,
+)
+
+NON_NAME_WORDS = frozenset(
+    {
+        "its",
+        "the",
+        "our",
+        "their",
+        "supporting",
+        "sustainable",
+        "mission",
+        "company",
+        "brand",
+        "business",
+        "store",
+        "team",
+        "leading",
+        "online",
+        "destination",
+        "world",
+        "books",
+        "shop",
+        "group",
+        "inc",
+        "llc",
+        "ltd",
+    }
 )
 
 
@@ -184,12 +245,34 @@ def _looks_like_ebay_username(name: str) -> bool:
     return bool(re.fullmatch(r"[a-z0-9_\-]{3,}", name, re.I))
 
 
+def _looks_like_person_name(name: str) -> bool:
+    words = name.split()
+    if not words or len(words) > 4:
+        return False
+    if _looks_like_ebay_username(name):
+        return False
+    if not words[0][0].isupper():
+        return False
+    if any(word.lower() in NON_NAME_WORDS for word in words):
+        return False
+    if any(word[0].islower() for word in words):
+        return False
+    if len(name) < 3:
+        return False
+    return True
+
+
 def _clean_person_name(name: str) -> str:
     cleaned = re.sub(r"\s+", " ", name).strip(" .,-")
     cleaned = TRAILING_NAME_PATTERN.sub("", cleaned).strip(" .,-")
     cleaned = re.split(r"[.,;]", cleaned, maxsplit=1)[0].strip()
     cleaned = re.split(r"\band\b", cleaned, maxsplit=1, flags=re.I)[0].strip()
     return cleaned
+
+
+def extract_founded_year_from_text(text: str) -> str | None:
+    match = FOUNDED_YEAR_PATTERN.search(text)
+    return match.group(1) if match else None
 
 
 def extract_people_from_text(text: str, source: str) -> list[dict[str, str | None]]:
@@ -199,9 +282,7 @@ def extract_people_from_text(text: str, source: str) -> list[dict[str, str | Non
     for pattern, role in FOUNDER_PATTERNS:
         for match in pattern.finditer(text):
             name = _clean_person_name(match.group(1))
-            if len(name) < 3 or len(name.split()) > 5:
-                continue
-            if _looks_like_ebay_username(name):
+            if not _looks_like_person_name(name):
                 continue
             key = (name.lower(), role)
             if key in seen:
@@ -215,6 +296,7 @@ def extract_people_from_text(text: str, source: str) -> list[dict[str, str | Non
 def extract_seller_profile_metadata(html: str) -> dict[str, str | None]:
     soup = BeautifulSoup(html, "lxml")
     fields = extract_json_fields(html)
+    json_about = extract_about_from_json(html)
 
     card = soup.select_one(".str-seller-card")
     card_text = card.get_text(" | ", strip=True) if card else None
@@ -235,6 +317,7 @@ def extract_seller_profile_metadata(html: str) -> dict[str, str | None]:
         "display_name": display_name,
         "badge": badge,
         "card_summary": card_text,
+        "about_text": json_about,
         "owner_username": fields.get("owner_username"),
         "store_name": fields.get("store_name") or display_name,
         "feedback_summary": extract_feedback_summary(html),
@@ -269,6 +352,7 @@ def merge_people(
                     "role": role,
                     "details": person.get("details"),
                     "source": person.get("source") or "unknown",
+                    "wikidata_id": person.get("wikidata_id"),
                 }
             )
 
@@ -297,6 +381,7 @@ def extract_store_metadata(html: str) -> dict[str, Any]:
         part for part in (about_intro, about_description) if part
     )
     people = extract_people_from_text(combined_text, source="about_text")
+    founded_year = extract_founded_year_from_text(combined_text)
 
     return {
         "store_name": store_name,
@@ -309,5 +394,6 @@ def extract_store_metadata(html: str) -> dict[str, Any]:
         "about_intro": about_intro,
         "about_description": about_description,
         "feedback_summary": feedback_summary,
+        "founded_year": founded_year,
         "people": people,
     }

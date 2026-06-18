@@ -11,10 +11,13 @@ import requests
 from scrapers.ebay import EBAY_BASE_URL, EbayShopScraper
 from scrapers.ebay_metadata import (
     build_profile_url,
+    extract_founded_year_from_text,
+    extract_people_from_text,
     extract_seller_profile_metadata,
     extract_store_metadata,
     merge_people,
 )
+from scrapers.wikidata_people import normalize_company_query
 
 
 @dataclass
@@ -23,6 +26,7 @@ class StorePerson:
     role: str
     source: str
     details: str | None = None
+    wikidata_id: str | None = None
 
 
 @dataclass
@@ -41,6 +45,11 @@ class EbayStoreProfile:
     feedback_summary: str | None
     seller_badge: str | None = None
     seller_display_name: str | None = None
+    company_name: str | None = None
+    company_description: str | None = None
+    founded_year: str | None = None
+    wikidata_id: str | None = None
+    wikidata_url: str | None = None
     people: list[StorePerson] = field(default_factory=list)
 
 
@@ -53,6 +62,7 @@ class EbayPeopleScraper:
         session: requests.Session | None = None,
         verbose: bool = False,
         use_openai: bool = False,
+        use_wikidata: bool = True,
         openai_api_key: str | None = None,
         openai_model: str = "gpt-4o-mini",
     ) -> None:
@@ -60,9 +70,11 @@ class EbayPeopleScraper:
         self.session = session or requests.Session()
         self.verbose = verbose
         self.use_openai = use_openai
+        self.use_wikidata = use_wikidata
         self.openai_api_key = openai_api_key
         self.openai_model = openai_model
         self._openai_extractor = None
+        self._wikidata_lookup = None
         self.store_scraper = EbayShopScraper(
             shop=self.shop_input,
             session=self.session,
@@ -97,6 +109,32 @@ class EbayPeopleScraper:
             )
         return self._openai_extractor
 
+    def _get_wikidata_lookup(self):
+        if self._wikidata_lookup is None:
+            from scrapers.wikidata_people import WikidataPeopleLookup
+
+            self._wikidata_lookup = WikidataPeopleLookup(session=self.session)
+        return self._wikidata_lookup
+
+    def _lookup_wikidata(
+        self,
+        store_name: str | None,
+        display_name: str | None = None,
+    ) -> dict[str, Any] | None:
+        if not self.use_wikidata:
+            return None
+
+        query = normalize_company_query(display_name, store_name)
+        if not query:
+            return None
+
+        self._log(f"Looking up company on Wikidata: {query}")
+        try:
+            return self._get_wikidata_lookup().lookup(query)
+        except requests.RequestException as error:
+            self._log(f"Wikidata lookup failed: {error}")
+            return None
+
     def fetch_profile(self) -> EbayStoreProfile:
         about_url = self._about_url(self.store_url)
         self._log(f"Fetching store about page: {about_url}")
@@ -128,23 +166,54 @@ class EbayPeopleScraper:
             if not metadata.get("store_name"):
                 metadata["store_name"] = seller_profile.get("store_name")
 
-        people_groups = [metadata.get("people") or []]
-
         combined_about = " ".join(
             part
-            for part in (metadata.get("about_intro"), metadata.get("about_description"))
+            for part in (
+                metadata.get("about_intro"),
+                metadata.get("about_description"),
+                seller_profile.get("about_text"),
+            )
             if part
         )
 
+        people_groups = [
+            metadata.get("people") or [],
+            extract_people_from_text(combined_about, source="combined_text"),
+        ]
+
+        founded_year = metadata.get("founded_year") or extract_founded_year_from_text(
+            combined_about
+        )
+        company_name = metadata.get("store_name")
+        company_description = None
+        wikidata_id = None
+        wikidata_url = None
+
+        wikidata_result = self._lookup_wikidata(
+            metadata.get("store_name"),
+            seller_profile.get("display_name"),
+        )
+        if wikidata_result:
+            people_groups.append(wikidata_result.get("people") or [])
+            company_name = wikidata_result.get("company_name") or company_name
+            company_description = wikidata_result.get("company_description")
+            if not founded_year:
+                founded_year = wikidata_result.get("founded_year")
+            wikidata_id = wikidata_result.get("wikidata_id")
+            wikidata_url = wikidata_result.get("wikidata_url")
+
         if self.use_openai:
             self._log("Using OpenAI to identify founders and key people")
-            openai_people = self._get_openai_extractor().extract_people(
-                store_name=metadata.get("store_name"),
+            openai_result = self._get_openai_extractor().extract_people(
+                store_name=company_name or metadata.get("store_name"),
                 owner_username=metadata.get("owner_username"),
                 about_text=combined_about or None,
                 seller_profile=seller_profile,
             )
-            people_groups.append(openai_people)
+            people_groups.append(openai_result.get("people") or [])
+            company_name = openai_result.get("company_name") or company_name
+            if not founded_year:
+                founded_year = openai_result.get("founded_year")
 
         people = [
             StorePerson(**person)
@@ -166,6 +235,11 @@ class EbayPeopleScraper:
             feedback_summary=metadata.get("feedback_summary"),
             seller_badge=seller_profile.get("badge"),
             seller_display_name=seller_profile.get("display_name"),
+            company_name=company_name,
+            company_description=company_description,
+            founded_year=founded_year,
+            wikidata_id=wikidata_id,
+            wikidata_url=wikidata_url,
             people=people,
         )
 

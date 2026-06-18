@@ -114,7 +114,12 @@ def build_parser() -> argparse.ArgumentParser:
     people.add_argument(
         "--openai",
         action="store_true",
-        help="Use OpenAI to identify founders and key people for the brand",
+        help="Also use OpenAI to identify founders and key people for the brand",
+    )
+    people.add_argument(
+        "--no-wikidata",
+        action="store_true",
+        help="Skip Wikidata lookup for company founders and executives",
     )
     people.add_argument(
         "--model",
@@ -271,11 +276,20 @@ def run_people(args: argparse.Namespace) -> None:
         shop=args.shop,
         verbose=True,
         use_openai=args.openai,
+        use_wikidata=not args.no_wikidata,
         openai_api_key=api_key,
         openai_model=args.model,
     )
-    mode = "OpenAI + HTML" if args.openai else "HTML"
-    print(f"Scraping eBay store people/founders ({mode}): {scraper.store_url}")
+    sources = []
+    if not args.no_wikidata:
+        sources.append("Wikidata")
+    sources.append("eBay")
+    if args.openai:
+        sources.append("OpenAI")
+    print(
+        f"Scraping eBay store people/founders ({' + '.join(sources)}): "
+        f"{scraper.store_url}"
+    )
     profile = scraper.scrape()
 
     output = args.output
@@ -287,6 +301,14 @@ def run_people(args: argparse.Namespace) -> None:
 
     print(f"\nSaved store profile to {output.as_posix()}")
     print(f"  Store: {profile.get('store_name') or profile.get('store_slug')}")
+    if profile.get("company_name") and profile.get("company_name") != profile.get("store_name"):
+        print(f"  Company: {profile['company_name']}")
+    if profile.get("company_description"):
+        print(f"  Company info: {profile['company_description']}")
+    if profile.get("founded_year"):
+        print(f"  Founded: {profile['founded_year']}")
+    if profile.get("wikidata_url"):
+        print(f"  Wikidata: {profile['wikidata_url']}")
     print(f"  Owner: {profile.get('owner_username') or 'N/A'}")
     if profile.get("seller_display_name"):
         print(f"  Display name: {profile['seller_display_name']}")
@@ -302,13 +324,21 @@ def run_people(args: argparse.Namespace) -> None:
     people = profile.get("people") or []
     print(f"\nPeople ({len(people)}):")
     if not people:
-        print("  (none found in about page text)")
-        if not args.openai:
-            print("  Tip: pass --openai to identify brand founders from public knowledge")
+        print("  (none found)")
+        if not args.openai and not args.no_wikidata:
+            print("  Tip: pass --openai for additional enrichment when Wikidata has no match")
+        elif args.no_wikidata and not args.openai:
+            print("  Tip: Wikidata is enabled by default; pass --openai for brand knowledge fallback")
     for person in people:
         details = person.get("details")
         suffix = f" — {details}" if details else ""
-        print(f"  - {person['name']} ({person['role']}) [{person.get('source')}]{suffix}")
+        wikidata = person.get("wikidata_id")
+        if wikidata:
+            suffix = f"{suffix} [{wikidata}]" if suffix else f" [{wikidata}]"
+        print(
+            f"  - {person['name']} ({person['role']}) "
+            f"[{person.get('source')}]{suffix}"
+        )
 
     if profile.get("about_intro"):
         intro = profile["about_intro"]

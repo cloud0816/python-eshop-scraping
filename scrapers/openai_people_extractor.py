@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from typing import Any
 
 from openai import OpenAI
@@ -54,11 +55,11 @@ class OpenAIPeopleExtractor:
         owner_username: str | None,
         about_text: str | None,
         seller_profile: dict[str, Any] | None = None,
-    ) -> list[dict[str, str | None]]:
+    ) -> dict[str, Any]:
         profile_lines = []
         if seller_profile:
             for key, value in seller_profile.items():
-                if value:
+                if value and key != "card_summary":
                     profile_lines.append(f"{key}: {value}")
 
         user_prompt = "\n".join(
@@ -98,6 +99,8 @@ class OpenAIPeopleExtractor:
                 continue
             if owner_username and name.lower() == owner_username.lower():
                 continue
+            if re.fullmatch(r"[a-z0-9_\-]{3,}", name, re.I):
+                continue
             people.append(
                 {
                     "name": name,
@@ -106,4 +109,9 @@ class OpenAIPeopleExtractor:
                     "source": "openai",
                 }
             )
-        return people
+
+        return {
+            "company_name": parsed.company_name,
+            "founded_year": parsed.founded_year,
+            "people": people,
+        }
